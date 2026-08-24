@@ -142,6 +142,34 @@ class MLP:
     def predict(self, x):
         return self.feedforward(x)[0]
 
+    # ---------------------- PASSO A PASSO (visualização) ----------------------
+    def forward_partial(self, x, up_to_layer):
+        """Executa o feedforward somente até a camada `up_to_layer` (inclusive)."""
+        for node, val in zip(self.layers[0], x):
+            node.value = val
+            node.z = val
+        for l in range(1, up_to_layer + 1):
+            for node in self.layers[l]:
+                total = node.bias
+                for e in node.in_edges:
+                    total += e.src.value * e.weight
+                node.z = total
+                node.value = sigmoid(total)
+
+    def backward_partial(self, y_true, down_to_layer):
+        """Calcula os deltas (sem atualizar pesos) da saída até `down_to_layer` (inclusive).
+        Assume que forward_partial já rodou até a última camada."""
+        out_layer = self.layers[-1]
+        for node, target in zip(out_layer, y_true):
+            error = node.value - target
+            node.delta = error * sigmoid_derivative(node.value)
+        for l in range(len(self.layers) - 2, down_to_layer - 1, -1):
+            for node in self.layers[l]:
+                total = 0.0
+                for e in node.out_edges:
+                    total += e.weight * e.dst.delta
+                node.delta = total * sigmoid_derivative(node.value)
+
     def get_weight_snapshot(self):
         """Retorna os pesos atuais organizados por camada, para visualização."""
         snapshot = []
