@@ -1,0 +1,3 @@
+[submodule "artigo/artigo"]
+	path = artigo/artigo
+	url = https://git.overleaf.com/6a920b9163f9ff8ef6829b60
