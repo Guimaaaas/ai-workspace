@@ -1,5 +1,5 @@
-from data_loader import load_dataset
-from neural_network import MLP
+from heart_disease.data_loader import load_dataset
+from heart_disease.neural_network import MLP
 import random
 
 
