@@ -13,6 +13,7 @@ st.caption("Sem pandas/numpy: dados, feedforward e backprop 100% em Python puro.
 
 # ---------------- Sidebar: hiperparâmetros ----------------
 st.sidebar.header("Hiperparâmetros")
+student_name = st.sidebar.text_input("Seu nome", "")
 hidden_str = st.sidebar.text_input("Camadas ocultas (separadas por vírgula)", "16,8")
 hidden = tuple(int(h.strip()) for h in hidden_str.split(",") if h.strip())
 lr = st.sidebar.slider("Taxa de aprendizado", 0.001, 0.5, 0.05, 0.001)
@@ -20,6 +21,9 @@ epochs = st.sidebar.slider("Épocas", 10, 500, 150, 10)
 seed = st.sidebar.number_input("Seed", value=42, step=1)
 update_every = st.sidebar.slider("Atualizar visualização a cada N épocas", 1, 20, 5)
 start = st.sidebar.button("Treinar", type="primary")
+
+PREPROCESSING_DESC = "standardize (z-score nas contínuas) + one-hot nas categóricas + binárias brutas"
+ACTIVATION_DESC = "sigmoid"
 
 
 # ---------------- Layout do grafo (coordenadas manuais) ----------------
@@ -159,12 +163,31 @@ if start:
     st.session_state.trained_positions = positions
     st.session_state.trained_data = (X_train, y_train, X_test, y_test)
     st.session_state.trained_layer_sizes = layer_sizes
+    st.session_state.trained_lr = lr
+    st.session_state.trained_test_acc = test_acc_history[-1]
+    st.session_state.trained_student_name = student_name
 
 if 'trained_mlp' in st.session_state:
     mlp = st.session_state.trained_mlp
     positions = st.session_state.trained_positions
     X_train, y_train, X_test, y_test = st.session_state.trained_data
     layer_sizes = st.session_state.trained_layer_sizes
+
+    # ---------------------- Card de resultado final ----------------------
+    name_display = st.session_state.trained_student_name or "Aluno(a)"
+    st.markdown(f"## {st.session_state.trained_test_acc:.3f} : {name_display}")
+    c_acc, c_lr, c_act, c_arch, c_prep = st.columns(5)
+    c_acc.metric("accuracy", f"{st.session_state.trained_test_acc:.3f}")
+    c_lr.metric("learning rate", f"{st.session_state.trained_lr:g}")
+    c_act.metric("activation", ACTIVATION_DESC)
+    c_arch.metric("architecture", " | ".join(str(s) for s in layer_sizes))
+    c_prep.metric("pre-processing", "standardize")
+    st.caption(f"Pré-processamento completo: {PREPROCESSING_DESC}")
+    comments = st.text_area(
+        "comentários",
+        placeholder="Ex.: o uso da padronização (standardize) ajudou a resolver o problema de gradientes explodindo no meu caso.",
+        key="result_comments",
+    )
 
     # ---------------------- Passo a passo: Feedforward / Backprop ----------------------
     st.subheader("Passo a passo: Feedforward e Backpropagation")

@@ -1,0 +1,342 @@
+========================================================================
+ EXPLICACAO DO PROJETO heart_disease
+ MLP (Rede Neural) para prever Doenca Cardiaca, implementada do zero
+========================================================================
+
+VISAO GERAL
+-----------
+O projeto treina uma rede neural do tipo MLP (Multi-Layer Perceptron)
+para prever se um paciente tem doenca cardiaca, a partir de 13
+atributos clinicos (idade, colesterol, pressao, etc.), usando a base
+"heart.csv".
+
+A caracteristica central do projeto e que TUDO e implementado em
+Python puro, sem bibliotecas de ciencia de dados/ML (sem pandas, sem
+numpy, sem PyTorch/TensorFlow/scikit-learn). Isso vale para:
+  - leitura e pre-processamento do CSV (data_loader.py)
+  - a rede neural, representada como um GRAFO explicito de nos e
+    arestas, com feedforward e backpropagation escritos na mao
+    (neural_network.py)
+
+A unica dependencia "pesada" e o Streamlit + Plotly, usados so para a
+INTERFACE VISUAL interativa (app.py), que mostra a rede neural como um
+grafo animado enquanto ela treina ou processa um exemplo passo a passo.
+
+Existem 4 arquivos principais:
+  1. data_loader.py   -> carrega e prepara os dados
+  2. neural_network.py -> implementa a rede neural (o "cerebro")
+  3. train.py          -> script de treino simples via terminal
+  4. app.py            -> aplicacao web (Streamlit) com visualizacao
+
+
+------------------------------------------------------------------------
+1) data_loader.py — Carregamento e pre-processamento dos dados
+------------------------------------------------------------------------
+
+Le o arquivo heart.csv e transforma cada linha (paciente) em um vetor
+numerico que a rede neural consegue consumir. Principais colunas do
+CSV: age, sex, cp, trestbps, chol, fbs, restecg, thalach, exang,
+oldpeak, slope, ca, thal (features) e target (0 = sem doenca, 1 = com
+doenca).
+
+Passo a passo das funcoes:
+
+- _detect_delimiter(path)
+  Abre a primeira linha do CSV e conta quantos ';' e ',' existem, para
+  descobrir automaticamente o separador (planilhas em PT-BR
+  costumam salvar com ';').
+
+- read_csv(path)
+  Le o CSV manualmente com o modulo csv.DictReader (biblioteca padrao
+  do Python, nao e pandas). Remove BOM e espacos em branco dos nomes
+  de coluna e dos valores, troca virgula decimal por ponto
+  (ex.: "3,1" -> "3.1") e converte tudo para float. Devolve uma lista
+  de dicionarios, um por paciente.
+
+- drop_duplicates(rows)
+  Remove pacientes cujas 14 colunas (13 features + target) sao
+  identicas a outro registro ja visto, usando um "set" de tuplas como
+  controle — evita treinar/testar com dados duplicados.
+
+- one_hot(value, n_categories)
+  Converte uma categoria numerica (ex.: cp = 2) em um vetor binario
+  (ex.: [0, 0, 1, 0]) — a codificacao "one-hot" classica para
+  variaveis categoricas.
+
+- CONTINUOUS / BINARY / CATEGORICAL (constantes)
+  Classificam cada uma das 13 colunas de entrada em 3 grupos, que sao
+  tratados de forma diferente ao montar o vetor de entrada:
+    * CONTINUOUS  (age, trestbps, chol, thalach, oldpeak): valores
+      numericos continuos -> serao padronizados (z-score).
+    * BINARY (sex, fbs, exang): ja sao 0/1 -> usados direto.
+    * CATEGORICAL (cp, restecg, slope, ca, thal): categorias
+      discretas com mais de 2 valores -> viram one-hot.
+
+- compute_scaler(rows)
+  Para cada coluna continua, calcula a media e o desvio padrao
+  (formula manual de variancia populacional) usando SOMENTE os dados
+  de treino. Isso e usado depois para padronizar (z-score):
+        valor_padronizado = (valor - media) / desvio_padrao
+  Fazer isso so com o treino evita "vazamento de dados" (data
+  leakage) do conjunto de teste.
+
+- build_feature_vector(row, stats)
+  Monta o vetor final de entrada da rede, concatenando, nesta ordem:
+    1. As 5 colunas continuas, ja padronizadas com o scaler.
+    2. As 3 colunas binarias, sem alteracao.
+    3. As 5 colunas categoricas, cada uma expandida em one-hot.
+  O tamanho final do vetor (input_size) e maior que 13 por causa do
+  one-hot (cada categoria vira varias colunas de 0/1).
+
+- train_test_split(rows, test_ratio=0.2, seed=42)
+  Embaralha as linhas (com semente fixa "seed", para reprodutibilidade)
+  e separa 20% para teste e 80% para treino.
+
+- load_dataset(path, test_ratio=0.2, seed=42)
+  Funcao principal do arquivo: encadeia tudo acima —
+  le o CSV -> remove duplicatas -> separa treino/teste -> calcula o
+  scaler (so com treino) -> constroi os vetores X_train/X_test e os
+  rotulos y_train/y_test. Retorna tambem input_size (dimensao do vetor
+  de entrada) e stats (o scaler, guardado para reuso).
+
+
+------------------------------------------------------------------------
+2) neural_network.py — A rede neural como um GRAFO
+------------------------------------------------------------------------
+
+Em vez de guardar os pesos em uma matriz (como fariam numpy/PyTorch),
+o projeto modela a rede literalmente como um grafo:
+  - Cada NEURONIO e um objeto Node (um vertice do grafo).
+  - Cada CONEXAO entre dois neuronios de camadas adjacentes e um
+    objeto Edge (uma aresta do grafo), que guarda o peso sinaptico.
+
+Funcoes auxiliares:
+
+- sigmoid(x)
+  Funcao de ativacao classica: 1 / (1 + e^-x). Tem uma protecao contra
+  overflow: se x for muito negativo/positivo, retorna 0.0/1.0 direto
+  em vez de calcular exp(x), que estouraria.
+
+- sigmoid_derivative(a)
+  Derivada da sigmoid, ja em funcao do valor ATIVADO "a"
+  (nao do "z" bruto): a * (1 - a). E usada no backprop.
+
+Classe Edge (aresta):
+  Guarda src (no de origem), dst (no de destino) e weight (peso).
+  Usa __slots__ para ser mais leve em memoria (o grafo tem muitas
+  arestas — camadas totalmente conectadas).
+
+Classe Node (vertice / neuronio):
+  Guarda: layer_idx e idx (posicao na rede), bias, value (ativacao "a"
+  apos a funcao sigmoid), z (soma ponderada antes da ativacao), delta
+  (gradiente local usado no backprop), in_edges (arestas que chegam
+  nele, vindas da camada anterior) e out_edges (arestas que saem dele,
+  indo para a camada seguinte).
+
+Classe MLP (a rede em si):
+
+  __init__(layer_sizes, seed, lr)
+    layer_sizes e uma lista como [input_size, 16, 8, 1]: tamanho da
+    camada de entrada, das camadas ocultas e da camada de saida (aqui
+    sempre 1 neuronio de saida = probabilidade de doenca cardiaca).
+    - Cria os Nodes de cada camada.
+    - Cria as Edges conectando TODOS os nos de uma camada a TODOS os
+      nos da camada seguinte (rede densa / totalmente conectada).
+    - Os pesos sao inicializados aleatoriamente dentro de um intervalo
+      calculado pela formula de Xavier/He simplificada:
+          limite = sqrt(6 / (fan_in + fan_out))
+      Isso evita que os valores iniciais sejam grandes demais ou
+      pequenos demais, o que atrapalharia o treinamento.
+    - O bias de cada neuronio comeca com um valor aleatorio pequeno.
+
+  feedforward(x)
+    Propaga um vetor de entrada x pela rede, da esquerda para a
+    direita:
+    1. Os valores de x sao colocados diretamente nos neuronios da
+       camada de entrada (value = z = valor bruto da feature).
+    2. Para cada camada seguinte, cada neuronio percorre suas
+       in_edges, soma (valor_do_no_anterior * peso_da_aresta) mais o
+       proprio bias -> isso e "z". Depois aplica sigmoid(z) -> "value"
+       (a ativacao).
+    3. Retorna a lista de ativacoes da ultima camada (aqui, 1 numero:
+       a probabilidade prevista).
+
+  backprop(y_true)
+    Implementa a retropropagacao do erro (regra da cadeia), camada por
+    camada, da saida para a entrada:
+    1. Calcula o delta (erro local) do neuronio de saida:
+           delta = (previsto - alvo) * sigmoid_derivative(previsto)
+    2. Para cada camada oculta, de tras pra frente, calcula o delta de
+       cada neuronio somando (peso_da_aresta_de_saida * delta_do_no_
+       destino) para todas as suas out_edges, multiplicado pela
+       derivada da sigmoid do proprio neuronio. Isso e a regra da
+       cadeia aplicada aresta por aresta.
+    3. Atualiza cada peso do grafo (todas as Edges) por gradiente
+       descendente:
+           peso -= taxa_de_aprendizado * (delta_do_destino * valor_da_origem)
+       E atualiza cada bias:
+           bias -= taxa_de_aprendizado * delta_do_no
+
+  train_step(x, y)
+    Faz um passo de treino completo para UM exemplo: roda feedforward,
+    roda backprop (que ja atualiza os pesos) e calcula a perda (loss)
+    com binary_cross_entropy. Retorna a previsao e a perda.
+
+  predict(x)
+    Roda so o feedforward e devolve a probabilidade prevista (0 a 1).
+
+  forward_partial(x, up_to_layer) e backward_partial(y_true, down_to_layer)
+    Sao versoes "fatiadas" do feedforward/backprop, que param em uma
+    camada especifica em vez de ir ate o fim. NAO atualizam pesos. Sao
+    usadas exclusivamente pela interface (app.py) para animar o
+    processo passo a passo (camada por camada) na tela.
+
+  get_weight_snapshot()
+    Retorna todos os pesos atuais organizados por camada (usado
+    potencialmente para inspecao/visualizacao).
+
+  binary_cross_entropy(pred, target, eps)
+    Funcao de perda padrao para classificacao binaria:
+        loss = -( alvo*log(previsto) + (1-alvo)*log(1-previsto) )
+    O "eps" evita log(0), que seria -infinito.
+
+
+------------------------------------------------------------------------
+3) train.py — Treino simples via terminal (sem interface grafica)
+------------------------------------------------------------------------
+
+Script utilitario para treinar a rede rodando direto no terminal,
+sem abrir o Streamlit. Uteis para testar rapidamente se a rede esta
+aprendendo.
+
+- accuracy(mlp, X, y)
+  Calcula a acuracia: para cada exemplo, se a previsao (0 a 1) for
+  >= 0.5 vira rotulo 1, senao vira 0; compara com o rotulo real e
+  conta acertos / total.
+
+- train(epochs, lr, hidden, seed, verbose)
+  1. Carrega o dataset (load_dataset).
+  2. Cria a MLP com a arquitetura [input_size, *hidden, 1].
+  3. Repete por "epochs" epocas:
+     - Embaralha a ordem dos exemplos de treino a cada epoca (para o
+       treino nao "decorar" a ordem).
+     - Roda train_step em cada exemplo (isso ja faz feedforward +
+       backprop + atualizacao de pesos, exemplo por exemplo — e o
+       chamado "stochastic gradient descent", SGD puro, sem batches).
+     - Acumula a perda media da epoca.
+     - Calcula acuracia de treino e de teste.
+     - A cada 20 epocas (ou na epoca 1), imprime o progresso no
+       terminal.
+  4. Retorna a rede treinada, o historico de metricas e os dados.
+
+  Se rodado diretamente ("python train.py"), so chama train() com os
+  valores padrao (200 epocas, lr=0.05, camadas ocultas 16 e 8).
+
+
+------------------------------------------------------------------------
+4) app.py — Interface visual interativa (Streamlit + Plotly)
+------------------------------------------------------------------------
+
+E a "cara" do projeto: uma pagina web (rodada com
+"streamlit run app.py") que treina a rede em tempo real e desenha o
+grafo da rede neural se atualizando, alem de permitir andar passo a
+passo pelo feedforward/backprop de um exemplo especifico.
+
+Nao faz nenhum calculo de ML por conta propria — so chama as funcoes
+de data_loader.py e neural_network.py e desenha o resultado.
+
+Barra lateral (hiperparametros escolhidos pelo usuario):
+  - Camadas ocultas (ex.: "16,8" -> duas camadas ocultas, 16 e 8
+    neuronios).
+  - Taxa de aprendizado (lr).
+  - Numero de epocas.
+  - Seed (semente aleatoria, para reprodutibilidade).
+  - A cada quantas epocas atualizar a visualizacao (para nao redesenhar
+    o grafo a cada epoca, o que deixaria lento).
+  - Botao "Treinar".
+
+Funcoes de desenho do grafo:
+
+- compute_positions(layer_sizes)
+  Calcula as coordenadas (x, y) de cada neuronio na tela, na mao (sem
+  numpy): x depende de em qual camada o neuronio esta (esquerda ->
+  direita), y distribui os neuronios de uma mesma camada uniformemente
+  de cima a baixo.
+
+- build_figure(mlp, positions, ..., highlight_layer, highlight_mode)
+  Monta um grafico Plotly (go.Figure) com:
+    * Linhas cinzas representando TODAS as arestas (conexoes/pesos) da
+      rede entre camadas adjacentes (limitado a max_edges_per_layer por
+      camada, para nao travar o navegador em redes grandes).
+    * Linhas coloridas (vermelho = feedforward, azul = backprop)
+      destacando as arestas que estao "ativas" no passo atual, quando
+      highlight_mode e highlight_layer sao informados.
+    * Bolinhas (marcadores) representando os neuronios, coloridas pela
+      ativacao atual (escala de cor "Viridis", de 0 a 1). Ao passar o
+      mouse, mostra z, ativacao e delta daquele neuronio.
+
+- accuracy(mlp, X, y)
+  Igual a de train.py: mede a fracao de previsoes corretas.
+
+Fluxo principal da pagina:
+
+1. Quando o botao "Treinar" e clicado:
+   - Carrega o dataset e cria a MLP com a arquitetura escolhida.
+   - Treina epoca por epoca (mesma logica do train.py: embaralha,
+     roda train_step em cada exemplo, acumula perda).
+   - A cada N epocas (definido na barra lateral), atualiza na tela:
+       o grafo da rede (build_figure), o grafico de perda (loss) ao
+       longo das epocas, o grafico de acuracia de treino/teste, e uma
+       caixa de status com os numeros da epoca atual.
+   - Ao terminar, guarda a rede treinada e os dados em
+     st.session_state, para que continuem disponiveis mesmo depois que
+     o usuario interagir com outros botoes da pagina (o Streamlit
+     re-executa o script inteiro a cada interacao, entao sem
+     session_state a rede treinada seria perdida).
+
+2. Secao "Passo a passo: Feedforward e Backpropagation"
+   (so aparece depois que a rede foi treinada ao menos uma vez)
+   Permite escolher um exemplo do conjunto de teste e avancar passo a
+   passo, camada por camada:
+   - Primeiros passos (0 ate n_layers-1): fase de FEEDFORWARD. Cada
+     passo chama forward_partial ate uma camada especifica, e o grafo
+     destaca em VERMELHO as conexoes que acabaram de ser calculadas
+     ("informacao entrando" naquela camada).
+   - Passos seguintes: fase de BACKPROP. Chama backward_partial,
+     calculando o delta de cada camada da saida ate a camada indicada,
+     e destaca em AZUL as conexoes envolvidas ("erro se propagando"
+     para tras).
+   - Uma tabela mostra, para a camada em destaque, o z, a ativacao e o
+     delta de cada neuronio.
+   - Botoes permitem avancar ("Proximo passo"), reiniciar, ou ligar
+     "Reproducao automatica" (o app dorme 1 segundo e avanca sozinho,
+     via st.rerun()).
+   - Mostra tambem a predicao final da rede para o exemplo escolhido
+     comparada ao rotulo real (Doenca cardiaca / Sem doenca cardiaca).
+
+3. Secao "Inferencia em um caso de teste"
+   Permite escolher qualquer exemplo do conjunto de teste e rodar
+   apenas a predicao final (mlp.predict), mostrando o grafo completo
+   (sem destaque de passo a passo) e o resultado: previsto vs. real.
+
+Se o botao "Treinar" ainda nao foi clicado, a pagina so mostra uma
+mensagem pedindo para configurar os hiperparametros e treinar.
+
+
+------------------------------------------------------------------------
+RESUMO DO FLUXO COMPLETO
+------------------------------------------------------------------------
+heart.csv
+   -> data_loader.load_dataset()      (le, limpa, padroniza, separa treino/teste)
+   -> neural_network.MLP(...)         (cria o grafo de neuronios/pesos)
+   -> mlp.train_step(x, y) por epoca  (feedforward + backprop + atualiza pesos)
+   -> mlp.predict(x)                  (usa a rede treinada para prever)
+   -> app.py (Streamlit/Plotly)       (mostra tudo isso visualmente e
+                                        permite explorar passo a passo)
+
+Em resumo: o projeto reimplementa "na mao" os conceitos fundamentais
+de uma rede neural (representacao em grafo, feedforward, regra da
+cadeia no backprop, gradiente descendente, padronizacao de dados,
+one-hot encoding, split treino/teste) sem usar bibliotecas prontas de
+ML, e usa Streamlit apenas como camada de visualizacao para tornar o
+processo de aprendizado da rede visualmente compreensivel.
