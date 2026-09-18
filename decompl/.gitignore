@@ -1,0 +1,4 @@
+data/
+decompl/.venv/
+decompl/result/
+__pycache__/
