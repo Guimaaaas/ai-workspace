@@ -1,0 +1,151 @@
+18:21:36 | Carregando dataset de treino...
+18:21:37 | Batches por epoca: 218
+18:21:37 | Carregando modelo e checkpoint pre-treinado (./checkpoint_weights_volleyball_half.pth)...
+18:21:37 | Chaves novas (sem peso pre-treinado): ['player_context.self_attn.in_proj_weight', 'player_context.self_attn.in_proj_bias', 'player_context.self_attn.out_proj.weight', 'player_context.self_attn.out_proj.bias', 'player_context.linear1.weight', 'player_context.linear1.bias', 'player_context.linear2.weight', 'player_context.linear2.bias', 'player_context.norm1.weight', 'player_context.norm1.bias', 'player_context.norm2.weight', 'player_context.norm2.bias']
+18:21:37 | Parametros treinaveis: 133641 / 15570096 (0.86%)
+18:21:37 | Iniciando fine-tuning por 10 epocas...
+
+Train at epoch #1
+Group Activity Accuracy: 99.83%, Actions Accuracy: 66.20%, Activities Side Accuracy: 99.94%, Activities Team Accuracy: 99.83%, Loss: 0.87104, BaselineLoss: 0.86224, Using 1320.4 seconds
+[[415   0   0   0   0   0   0   0]
+ [  1 478   0   0   0   0   2   0]
+ [  0   0 606   0   0   0   0   0]
+ [  0   0   0 218   0   0   0   0]
+ [  0   0   0   0 450   1   0   0]
+ [  0   0   1   0   1 451   0   0]
+ [  0   0   0   0   0   0 607   0]
+ [  0   0   0   0   0   0   0 257]]
+
+
+18:43:38 | epoca 1/10 concluida em 22.0 min | loss=0.8710 | actions_acc=66.20% | activities_acc=99.83%
+
+Train at epoch #2
+Group Activity Accuracy: 99.86%, Actions Accuracy: 75.12%, Activities Side Accuracy: 99.97%, Activities Team Accuracy: 99.91%, Loss: 0.60625, BaselineLoss: 0.59949, Using 1463.6 seconds
+[[425   0   0   0   0   0   0   0]
+ [  1 467   0   0   0   0   0   0]
+ [  0   1 593   0   0   0   0   0]
+ [  0   0   0 243   0   0   0   0]
+ [  0   0   0   0 438   1   1   0]
+ [  0   0   0   0   1 466   0   0]
+ [  0   0   0   0   0   0 619   0]
+ [  0   0   0   0   0   0   0 232]]
+
+
+19:08:01 | epoca 2/10 concluida em 24.4 min | loss=0.6062 | actions_acc=75.12% | activities_acc=99.86%
+
+Train at epoch #3
+Group Activity Accuracy: 99.71%, Actions Accuracy: 76.81%, Activities Side Accuracy: 99.91%, Activities Team Accuracy: 99.74%, Loss: 0.55355, BaselineLoss: 0.54168, Using 1483.9 seconds
+[[430   0   0   0   0   0   0   0]
+ [  1 457   1   0   0   0   0   0]
+ [  0   1 584   0   0   1   1   0]
+ [  0   0   0 247   0   0   0   0]
+ [  0   0   0   0 433   2   0   0]
+ [  0   0   1   0   1 473   1   0]
+ [  0   0   0   0   0   0 626   0]
+ [  0   0   0   0   0   0   0 228]]
+
+
+19:32:45 | epoca 3/10 concluida em 24.7 min | loss=0.5535 | actions_acc=76.81% | activities_acc=99.71%
+
+Train at epoch #4
+Group Activity Accuracy: 99.89%, Actions Accuracy: 77.54%, Activities Side Accuracy: 99.94%, Activities Team Accuracy: 99.83%, Loss: 0.52439, BaselineLoss: 0.51797, Using 1462.3 seconds
+[[466   0   0   0   0   0   0   0]
+ [  0 467   0   0   0   0   0   0]
+ [  0   0 618   0   0   1   1   0]
+ [  0   0   0 234   0   0   0   0]
+ [  0   0   0   0 399   1   0   0]
+ [  0   0   0   0   1 466   0   0]
+ [  0   0   0   0   0   0 593   0]
+ [  0   0   0   0   0   0   0 241]]
+
+
+19:57:08 | epoca 4/10 concluida em 24.4 min | loss=0.5244 | actions_acc=77.54% | activities_acc=99.89%
+
+Train at epoch #5
+Group Activity Accuracy: 99.77%, Actions Accuracy: 78.59%, Activities Side Accuracy: 100.00%, Activities Team Accuracy: 99.68%, Loss: 0.49126, BaselineLoss: 0.48181, Using 1414.8 seconds
+[[424   0   0   0   0   0   0   0]
+ [  1 445   0   0   0   0   1   0]
+ [  0   0 627   0   0   0   0   0]
+ [  0   0   0 253   0   0   0   0]
+ [  0   0   0   0 440   2   0   0]
+ [  0   0   0   0   2 484   2   0]
+ [  0   0   0   0   0   0 586   0]
+ [  0   0   0   0   0   0   0 221]]
+
+
+20:20:42 | epoca 5/10 concluida em 23.6 min | loss=0.4913 | actions_acc=78.59% | activities_acc=99.77%
+
+Train at epoch #6
+Group Activity Accuracy: 99.71%, Actions Accuracy: 79.02%, Activities Side Accuracy: 99.91%, Activities Team Accuracy: 99.66%, Loss: 0.48390, BaselineLoss: 0.47104, Using 1406.4 seconds
+[[433   0   0   0   0   0   0   0]
+ [  3 458   0   0   0   0   0   0]
+ [  0   0 584   0   0   1   0   0]
+ [  0   0   0 231   0   0   0   0]
+ [  0   0   0   0 430   2   1   0]
+ [  0   0   1   0   1 471   1   0]
+ [  0   0   0   0   0   0 628   0]
+ [  0   0   0   0   0   0   0 243]]
+
+
+20:44:09 | epoca 6/10 concluida em 23.4 min | loss=0.4839 | actions_acc=79.02% | activities_acc=99.71%
+
+Train at epoch #7
+Group Activity Accuracy: 99.68%, Actions Accuracy: 79.45%, Activities Side Accuracy: 99.89%, Activities Team Accuracy: 99.83%, Loss: 0.46555, BaselineLoss: 0.45825, Using 1409.6 seconds
+[[413   1   0   0   0   0   0   0]
+ [  3 454   1   0   0   0   1   0]
+ [  0   0 597   0   0   0   0   0]
+ [  0   0   0 218   0   0   0   0]
+ [  0   0   0   0 451   0   1   0]
+ [  0   0   1   0   0 473   1   0]
+ [  0   1   0   0   0   0 615   0]
+ [  0   0   0   0   0   0   1 256]]
+
+
+21:07:38 | epoca 7/10 concluida em 23.5 min | loss=0.4655 | actions_acc=79.45% | activities_acc=99.68%
+
+Train at epoch #8
+Group Activity Accuracy: 99.83%, Actions Accuracy: 79.77%, Activities Side Accuracy: 99.94%, Activities Team Accuracy: 99.89%, Loss: 0.45639, BaselineLoss: 0.45114, Using 1410.7 seconds
+[[440   0   0   0   0   0   0   0]
+ [  0 485   0   0   0   0   1   0]
+ [  0   0 581   0   0   0   2   0]
+ [  0   0   0 222   0   0   0   0]
+ [  0   0   0   0 423   1   1   0]
+ [  0   0   0   0   1 448   0   0]
+ [  0   0   0   0   0   0 630   0]
+ [  0   0   0   0   0   0   0 253]]
+
+
+21:31:09 | epoca 8/10 concluida em 23.5 min | loss=0.4564 | actions_acc=79.77% | activities_acc=99.83%
+
+Train at epoch #9
+Group Activity Accuracy: 99.83%, Actions Accuracy: 79.67%, Activities Side Accuracy: 99.94%, Activities Team Accuracy: 99.77%, Loss: 0.45666, BaselineLoss: 0.44435, Using 1409.7 seconds
+[[448   0   0   0   0   0   0   0]
+ [  2 442   1   0   0   0   1   0]
+ [  0   0 594   0   0   0   0   0]
+ [  0   0   0 252   0   0   0   0]
+ [  0   0   0   0 417   1   0   0]
+ [  0   0   0   0   0 488   0   0]
+ [  0   1   0   0   0   0 618   0]
+ [  0   0   0   0   0   0   0 223]]
+
+
+21:54:39 | epoca 9/10 concluida em 23.5 min | loss=0.4567 | actions_acc=79.67% | activities_acc=99.83%
+
+Train at epoch #10
+Group Activity Accuracy: 99.86%, Actions Accuracy: 80.08%, Activities Side Accuracy: 99.97%, Activities Team Accuracy: 99.83%, Loss: 0.43768, BaselineLoss: 0.43221, Using 1406.3 seconds
+[[441   2   0   0   0   0   0   0]
+ [  1 457   0   0   0   0   0   0]
+ [  0   0 659   0   0   0   0   0]
+ [  0   0   0 232   0   0   0   0]
+ [  0   0   0   0 422   0   1   0]
+ [  0   0   0   0   1 476   0   0]
+ [  0   0   0   0   0   0 554   0]
+ [  0   0   0   0   0   0   0 242]]
+
+
+22:18:05 | epoca 10/10 concluida em 23.4 min | loss=0.4377 | actions_acc=80.08% | activities_acc=99.86%
+22:18:05 | Fine-tuning concluido em 236.5 min.
+22:18:05 | Checkpoint fine-tuned salvo em: checkpoint_weights_volleyball_playercontext.pth
+22:18:05 | Rodando avaliacao completa no conjunto de teste (comparavel ao relatorio original)...
+23:48:54 | Relatorio salvo em: reports\decompl_volleyball_eval_report_treino_com_melhoria.md e reports\decompl_volleyball_eval_report_treino_com_melhoria.json
+23:48:54 | Resumo -> activities_acc=95.05% actions_acc=75.53% mpca=95.30%

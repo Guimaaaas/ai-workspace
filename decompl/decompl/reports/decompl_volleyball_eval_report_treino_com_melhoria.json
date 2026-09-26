@@ -1,0 +1,96 @@
+{
+  "n_test_samples": 1332,
+  "n_batches": 1332,
+  "elapsed_seconds": 5446.188361883163,
+  "activities_acc": 95.04504504504504,
+  "actions_acc": 75.53178178178179,
+  "activities_acc_side": 98.7987987987988,
+  "activities_acc_team": 94.51951951951952,
+  "loss": 1.6958795675402891,
+  "acties_acts_loss": 1.3243768312549289,
+  "confusion_matrix": [
+    [
+      157,
+      0,
+      10,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      5,
+      164,
+      11,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    [
+      4,
+      1,
+      215,
+      0,
+      0,
+      1,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      1,
+      86,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      156,
+      0,
+      12,
+      0
+    ],
+    [
+      0,
+      0,
+      1,
+      0,
+      3,
+      171,
+      3,
+      0
+    ],
+    [
+      0,
+      1,
+      1,
+      0,
+      6,
+      2,
+      217,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      3,
+      0,
+      0,
+      0,
+      100
+    ]
+  ],
+  "mpca": 95.295250415802,
+  "checkpoint": "checkpoint_weights_volleyball_playercontext.pth",
+  "data_path": "C:\\Users\\artur\\Documents\\Dados\\volleyball_\\videos"
+}

@@ -101,6 +101,14 @@ class DECOMPL_volleyball(nn.Module):
         self.left_attention = MultiHeadAttention(NFB, self.num_heads)
         self.right_attention = MultiHeadAttention(NFB, self.num_heads)
 
+        # Player-context Transformer: contextualizes each player with their
+        # teammates (self-attention) before the individual action is predicted,
+        # instead of classifying each player's action in isolation.
+        self.player_context = nn.TransformerEncoderLayer(
+            d_model=NFB, nhead=self.num_heads, dim_feedforward=NFB * 2,
+            dropout=self.cfg.train_dropout_prob, batch_first=True
+        )
+
         # Visual Classifiers
         self.fc_actions = nn.Linear(NFB,self.cfg.num_actions)
         self.fc_activities = nn.Linear(2*NFB,self.cfg.num_activities)
@@ -198,8 +206,22 @@ class DECOMPL_volleyball(nn.Module):
         activities_scores_side = self.fc_activities_side(together_features) #B*T, side_acty_num
         activities_scores_team = self.fc_activities_team(together_features)  #B*T, team_acty_num
 
+        # Contextualize each player with their teammates (self-attention over
+        # the team) before predicting the individual action, so the "jogada
+        # individual" is informed by what the rest of the team is doing.
+        first_team_context = self.player_context(first_team_boxes_states.reshape(B*T, N//2, NFB))
+        second_team_context = self.player_context(second_team_boxes_states.reshape(B*T, N//2, NFB))
+        contextualized_permuted = torch.cat((first_team_context, second_team_context), dim=1)  #B*T, N, NFB
+
+        # Undo the left-to-right sort so contextualized features line back up
+        # with the original box/action order.
+        inverse_indices = [torch.argsort(idx) for idx in sorted_indices]
+        contextualized_states = torch.stack(
+            [el[inv] for el, inv in zip(contextualized_permuted, inverse_indices)]
+        ).reshape(B, T, N, NFB)
+
         # Predict actions
-        boxes_states_flat = boxes_states.reshape(-1, NFB)  #B*T*N, NFB
+        boxes_states_flat = contextualized_states.reshape(-1, NFB)  #B*T*N, NFB
         actions_scores = self.fc_actions(boxes_states_flat)  #B*T*N, actn_num
 
 

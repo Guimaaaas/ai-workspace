@@ -1,0 +1,30 @@
+22:18:05 | Carregando dataset...
+22:18:06 | Amostras de teste: 1332
+22:18:06 | Carregando modelo e checkpoint (checkpoint_weights_volleyball_playercontext.pth)...
+22:21:31 | batch 50/1332 | acc_ate_agora=94.00% | 4.07s/it | ETA 86.9 min
+22:24:55 | batch 100/1332 | acc_ate_agora=93.00% | 4.08s/it | ETA 83.7 min
+22:28:19 | batch 150/1332 | acc_ate_agora=92.00% | 4.08s/it | ETA 80.3 min
+22:31:44 | batch 200/1332 | acc_ate_agora=93.50% | 4.08s/it | ETA 77.0 min
+22:35:08 | batch 250/1332 | acc_ate_agora=94.00% | 4.08s/it | ETA 73.6 min
+22:38:32 | batch 300/1332 | acc_ate_agora=93.33% | 4.08s/it | ETA 70.2 min
+22:41:56 | batch 350/1332 | acc_ate_agora=93.14% | 4.08s/it | ETA 66.8 min
+22:45:20 | batch 400/1332 | acc_ate_agora=93.50% | 4.08s/it | ETA 63.4 min
+22:48:44 | batch 450/1332 | acc_ate_agora=93.56% | 4.08s/it | ETA 60.0 min
+22:52:08 | batch 500/1332 | acc_ate_agora=93.40% | 4.08s/it | ETA 56.6 min
+22:55:32 | batch 550/1332 | acc_ate_agora=93.64% | 4.08s/it | ETA 53.2 min
+22:58:56 | batch 600/1332 | acc_ate_agora=93.67% | 4.08s/it | ETA 49.8 min
+23:02:19 | batch 650/1332 | acc_ate_agora=93.69% | 4.08s/it | ETA 46.4 min
+23:05:43 | batch 700/1332 | acc_ate_agora=93.71% | 4.08s/it | ETA 43.0 min
+23:09:07 | batch 750/1332 | acc_ate_agora=93.73% | 4.08s/it | ETA 39.6 min
+23:12:31 | batch 800/1332 | acc_ate_agora=94.00% | 4.08s/it | ETA 36.2 min
+23:15:54 | batch 850/1332 | acc_ate_agora=94.35% | 4.08s/it | ETA 32.8 min
+23:19:18 | batch 900/1332 | acc_ate_agora=94.56% | 4.08s/it | ETA 29.4 min
+23:22:41 | batch 950/1332 | acc_ate_agora=94.74% | 4.08s/it | ETA 26.0 min
+23:26:05 | batch 1000/1332 | acc_ate_agora=94.80% | 4.08s/it | ETA 22.6 min
+23:29:32 | batch 1050/1332 | acc_ate_agora=94.76% | 4.08s/it | ETA 19.2 min
+23:32:57 | batch 1100/1332 | acc_ate_agora=94.91% | 4.08s/it | ETA 15.8 min
+23:36:22 | batch 1150/1332 | acc_ate_agora=94.96% | 4.08s/it | ETA 12.4 min
+23:39:50 | batch 1200/1332 | acc_ate_agora=94.83% | 4.09s/it | ETA 9.0 min
+23:43:18 | batch 1250/1332 | acc_ate_agora=94.88% | 4.09s/it | ETA 5.6 min
+23:46:43 | batch 1300/1332 | acc_ate_agora=94.92% | 4.09s/it | ETA 2.2 min
+23:48:54 | batch 1332/1332 | acc_ate_agora=95.05% | 4.09s/it | ETA 0.0 min

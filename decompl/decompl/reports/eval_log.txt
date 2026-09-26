@@ -1,0 +1,33 @@
+16:06:23 | Iniciando avaliacao (volleyball, test_only)...
+16:06:23 | Carregando dataset...
+16:06:23 | Amostras de teste: 1332
+16:06:23 | Carregando modelo e checkpoint (./checkpoint_weights_volleyball_half.pth)...
+16:09:45 | batch 50/1332 | acc_ate_agora=94.00% | 4.03s/it | ETA 86.1 min
+16:13:16 | batch 100/1332 | acc_ate_agora=93.00% | 4.12s/it | ETA 84.6 min
+16:16:49 | batch 150/1332 | acc_ate_agora=92.00% | 4.17s/it | ETA 82.1 min
+16:20:18 | batch 200/1332 | acc_ate_agora=93.50% | 4.17s/it | ETA 78.7 min
+16:23:45 | batch 250/1332 | acc_ate_agora=94.00% | 4.17s/it | ETA 75.1 min
+16:27:14 | batch 300/1332 | acc_ate_agora=93.33% | 4.17s/it | ETA 71.7 min
+16:30:44 | batch 350/1332 | acc_ate_agora=93.14% | 4.17s/it | ETA 68.3 min
+16:34:12 | batch 400/1332 | acc_ate_agora=93.50% | 4.17s/it | ETA 64.8 min
+16:37:41 | batch 450/1332 | acc_ate_agora=93.56% | 4.17s/it | ETA 61.3 min
+16:41:10 | batch 500/1332 | acc_ate_agora=93.40% | 4.17s/it | ETA 57.9 min
+16:44:41 | batch 550/1332 | acc_ate_agora=93.64% | 4.18s/it | ETA 54.4 min
+16:48:13 | batch 600/1332 | acc_ate_agora=93.67% | 4.18s/it | ETA 51.0 min
+16:51:45 | batch 650/1332 | acc_ate_agora=93.69% | 4.19s/it | ETA 47.6 min
+16:55:13 | batch 700/1332 | acc_ate_agora=93.86% | 4.18s/it | ETA 44.1 min
+16:58:30 | batch 750/1332 | acc_ate_agora=93.87% | 4.17s/it | ETA 40.4 min
+17:01:40 | batch 800/1332 | acc_ate_agora=94.12% | 4.14s/it | ETA 36.8 min
+17:04:50 | batch 850/1332 | acc_ate_agora=94.47% | 4.12s/it | ETA 33.1 min
+17:08:00 | batch 900/1332 | acc_ate_agora=94.67% | 4.11s/it | ETA 29.6 min
+17:11:10 | batch 950/1332 | acc_ate_agora=94.95% | 4.09s/it | ETA 26.0 min
+17:14:21 | batch 1000/1332 | acc_ate_agora=95.00% | 4.08s/it | ETA 22.6 min
+17:17:35 | batch 1050/1332 | acc_ate_agora=94.95% | 4.07s/it | ETA 19.1 min
+17:20:47 | batch 1100/1332 | acc_ate_agora=95.09% | 4.06s/it | ETA 15.7 min
+17:23:58 | batch 1150/1332 | acc_ate_agora=95.13% | 4.05s/it | ETA 12.3 min
+17:27:12 | batch 1200/1332 | acc_ate_agora=95.00% | 4.04s/it | ETA 8.9 min
+17:30:28 | batch 1250/1332 | acc_ate_agora=95.04% | 4.04s/it | ETA 5.5 min
+17:33:39 | batch 1300/1332 | acc_ate_agora=95.08% | 4.03s/it | ETA 2.1 min
+17:35:41 | batch 1332/1332 | acc_ate_agora=95.20% | 4.02s/it | ETA 0.0 min
+17:35:41 | Relatorio salvo em: reports\decompl_volleyball_eval_report.md e reports\decompl_volleyball_eval_report.json
+17:35:41 | Resumo -> activities_acc=95.20% actions_acc=79.32% mpca=95.43%
