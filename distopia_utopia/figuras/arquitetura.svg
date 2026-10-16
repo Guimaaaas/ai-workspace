@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1640 1020" width="1640" height="1020"
+     role="img" font-family="Segoe UI, Arial, sans-serif"
+     aria-label="Arquitetura do debate multiagente: a agenda da rodada e o estado do debate alimentam build_context, que monta o prompt de cada um dos quatro agentes; eles falam em ordem fixa — Mediador, Arquiteto, Analista de Riscos e Cientista — e o ciclo repete 20 vezes, gravando as rodadas, os marcos 1, 5 e 20 e o plano final.">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1a1a1a"/>
+    </marker>
+    <marker id="arg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8a8a8a"/>
+    </marker>
+    <marker id="ara" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c07800"/>
+    </marker>
+  </defs>
+
+  <rect width="1640" height="1020" fill="#ffffff"/>
+
+  <!-- Título -->
+  <text x="95" y="48" font-size="27" font-weight="700" fill="#141414">Arquitetura Multiagente — Debate Distopia / Utopia</text>
+  <text x="95" y="78" font-size="15" fill="#555555">Uma rodada do loop. A ordem dos quatro agentes é fixa; o loop repete 20 vezes.</text>
+
+  <!-- Fontes de contexto -->
+  <rect x="95" y="108" width="675" height="70" rx="8" fill="#f7f7f8" stroke="#c9c9ce"/>
+  <text x="115" y="136" font-size="13.5" font-weight="700" fill="#141414">Agenda das 20 rodadas</text>
+  <text x="115" y="160" font-size="11.5" fill="#555555">R1–5 concepção · R6–12 fricção · R13–18 roadmap · R19–20 auditoria</text>
+
+  <rect x="870" y="108" width="675" height="70" rx="8" fill="#f7f7f8" stroke="#c9c9ce"/>
+  <text x="890" y="136" font-size="13.5" font-weight="700" fill="#141414">Estado do debate — transcript.json</text>
+  <text x="890" y="160" font-size="11.5" fill="#555555">aberturas do Mediador (memória) + rodada anterior na íntegra</text>
+
+  <line x1="432" y1="178" x2="432" y2="226" stroke="#8a8a8a" stroke-width="1.6" marker-end="url(#arg)"/>
+  <text x="444" y="207" font-size="11" fill="#555555">fase e objetivo do turno</text>
+  <line x1="1207" y1="178" x2="1207" y2="226" stroke="#8a8a8a" stroke-width="1.6" marker-end="url(#arg)"/>
+  <text x="1219" y="207" font-size="11" fill="#555555">memória do debate</text>
+
+  <!-- Montagem do prompt -->
+  <rect x="95" y="226" width="1450" height="74" rx="8" fill="#eef1f6" stroke="#9aa5b8"/>
+  <text x="820" y="257" font-size="15.5" font-weight="700" fill="#141414" text-anchor="middle">build_context() — monta o prompt de cada agente</text>
+  <text x="820" y="281" font-size="11.5" fill="#555555" text-anchor="middle">injeta: eixo da sessão · agenda da rodada · memória · falas já ditas nesta rodada</text>
+
+  <!-- Contexto injetado em cada agente -->
+  <line x1="235" y1="300" x2="235" y2="416" stroke="#8a8a8a" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#arg)"/>
+  <text x="247" y="346" font-size="11" fill="#555555">memória</text>
+  <text x="247" y="362" font-size="11" fill="#555555">completa</text>
+
+  <line x1="625" y1="300" x2="625" y2="416" stroke="#8a8a8a" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#arg)"/>
+  <text x="637" y="346" font-size="11" fill="#555555">memória</text>
+  <text x="637" y="362" font-size="11" fill="#555555">completa</text>
+
+  <line x1="1015" y1="300" x2="1015" y2="416" stroke="#c07800" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#ara)"/>
+  <text x="1027" y="346" font-size="11" font-weight="600" fill="#9a6000">memória reduzida:</text>
+  <text x="1027" y="362" font-size="11" fill="#9a6000">4 aberturas + 1500 car.</text>
+
+  <line x1="1405" y1="300" x2="1405" y2="416" stroke="#8a8a8a" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#arg)"/>
+  <text x="1417" y="346" font-size="11" fill="#555555">memória</text>
+  <text x="1417" y="362" font-size="11" fill="#555555">completa</text>
+
+  <!-- Agente 1: Mediador -->
+  <rect x="95" y="418" width="280" height="180" rx="8" fill="#f4f7fd" stroke="#2f6fdf"/>
+  <rect x="95" y="418" width="8" height="180" fill="#2f6fdf"/>
+  <circle cx="353" cy="441" r="13" fill="#2f6fdf"/>
+  <text x="353" y="446" font-size="12.5" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+  <text x="117" y="453" font-size="14.5" font-weight="700" fill="#141414">Mediador /</text>
+  <text x="117" y="472" font-size="14.5" font-weight="700" fill="#141414">Orquestrador</text>
+  <text x="117" y="496" font-size="11.5" fill="#666666">Chapéu Azul</text>
+  <text x="117" y="526" font-size="13.5" font-weight="600" fill="#141414">Claude Opus 5.5</text>
+  <rect x="117" y="540" width="138" height="24" rx="12" fill="#e2ebfa" stroke="#2f6fdf"/>
+  <text x="127" y="556" font-size="10.5" fill="#1c4f9e">remoto · assinatura</text>
+
+  <!-- Agente 2: Arquiteto -->
+  <rect x="485" y="418" width="280" height="180" rx="8" fill="#f4f7fd" stroke="#2e9e5b"/>
+  <rect x="485" y="418" width="8" height="180" fill="#2e9e5b"/>
+  <circle cx="743" cy="441" r="13" fill="#2e9e5b"/>
+  <text x="743" y="446" font-size="12.5" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+  <text x="507" y="453" font-size="14.5" font-weight="700" fill="#141414">Arquiteto da</text>
+  <text x="507" y="472" font-size="14.5" font-weight="700" fill="#141414">Transição</text>
+  <text x="507" y="496" font-size="11.5" fill="#666666">Chapéu Verde/Amarelo</text>
+  <text x="507" y="526" font-size="13.5" font-weight="600" fill="#141414">Claude Opus 5.5</text>
+  <rect x="507" y="540" width="138" height="24" rx="12" fill="#e6f4ec" stroke="#2e9e5b"/>
+  <text x="517" y="556" font-size="10.5" fill="#1d6b3d">remoto · assinatura</text>
+
+  <!-- Agente 3: Analista de Riscos (local) -->
+  <rect x="875" y="418" width="280" height="180" rx="8" fill="#fff6e5" stroke="#d98c00" stroke-width="2"/>
+  <rect x="875" y="418" width="8" height="180" fill="#444444"/>
+  <circle cx="1133" cy="441" r="13" fill="#444444"/>
+  <text x="1133" y="446" font-size="12.5" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+  <text x="897" y="453" font-size="14.5" font-weight="700" fill="#141414">Analista de Riscos</text>
+  <text x="897" y="472" font-size="14.5" font-weight="700" fill="#141414">&amp; Atrito</text>
+  <text x="897" y="496" font-size="11.5" fill="#666666">Chapéu Preto</text>
+  <text x="897" y="526" font-size="13.5" font-weight="600" fill="#141414">Llama 3.1 8B</text>
+  <rect x="897" y="540" width="112" height="24" rx="12" fill="#ffe9bf" stroke="#d98c00"/>
+  <text x="907" y="556" font-size="10.5" font-weight="600" fill="#8a5a00">local · Ollama</text>
+
+  <!-- Agente 4: Cientista -->
+  <rect x="1265" y="418" width="280" height="180" rx="8" fill="#f4f7fd" stroke="#c0392b"/>
+  <rect x="1265" y="418" width="8" height="180" fill="#c0392b"/>
+  <circle cx="1523" cy="441" r="13" fill="#c0392b"/>
+  <text x="1523" y="446" font-size="12.5" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
+  <text x="1287" y="453" font-size="14.5" font-weight="700" fill="#141414">Cientista de Fatos</text>
+  <text x="1287" y="472" font-size="14.5" font-weight="700" fill="#141414">&amp; Epidemiologista</text>
+  <text x="1287" y="496" font-size="11.5" fill="#666666">Chapéu Branco/Vermelho</text>
+  <text x="1287" y="526" font-size="13.5" font-weight="600" fill="#141414">Claude Opus 5.5</text>
+  <rect x="1287" y="540" width="138" height="24" rx="12" fill="#fae9e7" stroke="#c0392b"/>
+  <text x="1297" y="556" font-size="10.5" fill="#8f2b20">remoto · assinatura</text>
+
+  <!-- Passagem de bastão entre agentes -->
+  <line x1="375" y1="508" x2="483" y2="508" stroke="#1a1a1a" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="429" y="477" font-size="11" font-weight="600" fill="#333333" text-anchor="middle">pergunta-desafio</text>
+  <text x="429" y="492" font-size="11" fill="#333333" text-anchor="middle">+ vetos</text>
+
+  <line x1="765" y1="508" x2="873" y2="508" stroke="#1a1a1a" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="819" y="477" font-size="11" font-weight="600" fill="#333333" text-anchor="middle">proposta</text>
+  <text x="819" y="492" font-size="11" fill="#333333" text-anchor="middle">passo a passo</text>
+
+  <line x1="1155" y1="508" x2="1263" y2="508" stroke="#1a1a1a" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="1209" y="477" font-size="11" font-weight="600" fill="#333333" text-anchor="middle">2–3 furos</text>
+  <text x="1209" y="492" font-size="11" fill="#333333" text-anchor="middle">concretos</text>
+
+  <!-- Volta do loop -->
+  <path d="M1405,598 L1405,668 L235,668 L235,600" fill="none" stroke="#1a1a1a" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="560" y="656" font-size="12" font-weight="600" fill="#333333" text-anchor="middle">próxima rodada (R+1) — repete até a Rodada 20</text>
+
+  <!-- Gravação -->
+  <path d="M820,668 L820,722 M310,722 L1330,722" fill="none" stroke="#8a8a8a" stroke-width="1.6"/>
+  <text x="832" y="697" font-size="11.5" fill="#555555">ao fim de cada rodada</text>
+  <line x1="310" y1="722" x2="310" y2="750" stroke="#8a8a8a" stroke-width="1.6" marker-end="url(#arg)"/>
+  <line x1="820" y1="722" x2="820" y2="750" stroke="#8a8a8a" stroke-width="1.6" marker-end="url(#arg)"/>
+  <line x1="1330" y1="722" x2="1330" y2="750" stroke="#8a8a8a" stroke-width="1.6" marker-end="url(#arg)"/>
+
+  <!-- Saídas -->
+  <rect x="95" y="752" width="430" height="130" rx="8" fill="#f7f7f8" stroke="#c9c9ce"/>
+  <text x="117" y="784" font-size="13.5" font-weight="700" fill="#141414">rodadas/rodada_01…20.md</text>
+  <text x="117" y="810" font-size="11.5" fill="#555555">as 20 rodadas, na íntegra</text>
+  <text x="117" y="831" font-size="11.5" fill="#555555">+ transcript.json (dados brutos)</text>
+
+  <rect x="605" y="752" width="430" height="130" rx="8" fill="#eef1f6" stroke="#9aa5b8" stroke-width="2"/>
+  <text x="627" y="784" font-size="13.5" font-weight="700" fill="#141414">marcos.md · slides.md</text>
+  <text x="627" y="810" font-size="11.5" fill="#555555">Rodadas 1, 5 e 20 + resumo para slide</text>
+  <text x="627" y="831" font-size="11.5" font-weight="600" fill="#333333">os três estágios da apresentação</text>
+
+  <rect x="1115" y="752" width="430" height="130" rx="8" fill="#f7f7f8" stroke="#c9c9ce"/>
+  <text x="1137" y="784" font-size="13.5" font-weight="700" fill="#141414">utopia_silenciosa_plano.md</text>
+  <text x="1137" y="810" font-size="11.5" fill="#555555">documento final em 7 seções,</text>
+  <text x="1137" y="831" font-size="11.5" fill="#555555">compilado pelo Mediador em 4 blocos</text>
+
+  <!-- Legenda -->
+  <line x1="95" y1="912" x2="1545" y2="912" stroke="#e0e0e4"/>
+  <rect x="95" y="930" width="16" height="16" rx="3" fill="#f4f7fd" stroke="#2f6fdf"/>
+  <text x="121" y="943" font-size="12" fill="#333333">remoto — Claude Opus 5.5 pela assinatura (comando <tspan font-family="Consolas, monospace">claude -p</tspan>, sem ferramentas)</text>
+  <rect x="95" y="962" width="16" height="16" rx="3" fill="#fff6e5" stroke="#d98c00" stroke-width="2"/>
+  <text x="121" y="975" font-size="12" fill="#333333">local — Llama 3.1 8B via Ollama; janela de contexto menor, por isso recebe memória reduzida</text>
+  <line x1="900" y1="938" x2="950" y2="938" stroke="#8a8a8a" stroke-width="1.6" stroke-dasharray="6 4"/>
+  <text x="962" y="943" font-size="12" fill="#333333">contexto injetado antes de cada fala</text>
+  <text x="900" y="975" font-size="12" fill="#333333">Fala sinalizada pelos filtros do modelo → registrada no lugar da fala; o debate segue.</text>
+</svg>
