@@ -1,0 +1,9 @@
+anthropic>=1.11
+streamlit>=1.50
+requests
+pandas
+claude-agent-sdk
+fpdf2>=2.8
+markdown
+beautifulsoup4
+pypdf

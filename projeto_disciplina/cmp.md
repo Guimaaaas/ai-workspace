@@ -7,21 +7,33 @@
 
 ## 0 · a minha ideia completa
 
-**Chão Público** · Movimentos de moradia e Defesa Civil mapeiam prédios estatais vazios.
-Agentes de IA auditam cada prédio e geram um laudo de quanto o abandono custa ao órgão
-e uma ficha dizendo se ele serve de abrigo em enchentes.
-O vazio vira estoque: argumento de economia para virar moradia e abrigo pronto na emergência.
+> **escopo ampliado em 13/11/2026.** a ideia deixou de ser só prédio público e abrigo em enchente e passou a
+> ser a função social de qualquer imóvel ocioso, público ou privado. os § 0 e § 1 já estão na versão nova; os
+> § 2 a § 7 foram feitos para a versão antiga e precisam ser revistos (ver as notas em cada um).
+
+**Chão Público** · Movimentos sociais, Defesa Civil e órgãos públicos mapeiam imóveis ociosos:
+prédios e terrenos públicos sem uso e imóveis privados abandonados.
+Agentes de IA auditam cada imóvel em bases públicas e geram um laudo com quanto o abandono custa ao
+poder público, a situação fiscal (dívida de IPTU, se o IPTU progressivo está sendo cobrado como a lei
+manda) e as condições do imóvel para cumprir uma função social, com riscos como enchente.
+O laudo não escolhe o uso: se o imóvel vira moradia, abrigo ou creche é decisão do órgão responsável.
+O vazio vira estoque, e o abandono vira prova.
 
 ## 1 · a ficha da ideia
 
-- **cenário:** prédios e terrenos públicos (União, estado, município) vazios no centro de capitais brasileiras sujeitas a enchentes, como o Recife.
-- **usuário:** movimentos de moradia e Defesa Civil municipal.
-- **problema do usuário:** não têm como provar, com dados oficiais, quanto o abandono custa ao órgão nem se o prédio serve de abrigo; juntar matrícula, cadastro da SPU, contratos e contas leva semanas de advogado e engenheiro por imóvel.
-- **tecnologia:** sistema multiagente com *tools*: agentes que consultam bases públicas (SPU, portal da transparência, cartório) e redigem o laudo e a ficha.
+- **cenário:** imóveis ociosos no centro de capitais brasileiras: prédios e terrenos públicos (União, estado, município) sem uso e imóveis privados abandonados ou subutilizados, sujeitos aos instrumentos da função social (PEUC, IPTU progressivo no tempo, desapropriação, arrecadação por abandono). caso piloto: o Recife, cidade sujeita a enchentes.
+- **usuário:** movimentos sociais (de moradia e outros), Defesa Civil e órgãos municipais de urbanismo, finanças e destinação de imóveis.
+- **problema do usuário:** não têm como provar, com dados oficiais, quanto o abandono custa ao poder público, se o município está usando contra o imóvel ocioso os instrumentos que a lei já dá (IPTU progressivo, cobrança da dívida, arrecadação) nem se o imóvel tem condições de cumprir alguma função social; juntar matrícula, cadastro da SPU, IPTU, contratos e contas leva semanas de advogado e engenheiro por imóvel.
+- **tecnologia:** sistema multiagente com *tools*: um agente consulta bases públicas (cadastro da SPU, IPTU municipal, cartas de risco do Serviço Geológico do Brasil, contratos, portal da transparência, diários oficiais), outro redige o laudo e um terceiro revisa cada número contra a fonte.
 
 ## 2 · catálogo de ferramentas
 
 ficha: **C**enário · **U**suário · **P**roblema · **T**ecnologia, cada um **=** igual, **≈** parecido ou **≠** diferente.
+
+> **(rever depois da ampliação de escopo.)** as fichas C U P T deste catálogo e do § 3 compararam a ideia
+> antiga (prédio público, abrigo em enchente). com imóvel privado, IPTU progressivo e função social em geral,
+> algumas fichas mudam (o *Who Owns What*, que mira o dono privado, fica mais próximo) e faltam competidores da
+> parte nova: quem já monitora a aplicação de PEUC e IPTU progressivo pelos municípios brasileiros.
 
 | ferramenta | o que faz | no que é bom | onde falha | C U P T |
 |:--|:--|:--|:--|:-:|
@@ -76,7 +88,7 @@ problema "=" ou "≈" com quem usa a sociedade civil.
 
 **✔** faz · **◐** faz em parte · **✘** não faz · **?** não achei evidência
 
-**(refazer numa conversa nova.)** os 6 do § 4 mudaram depois da auditoria, e a matriz antiga tinha
+**(refazer numa conversa nova, já com o escopo novo do § 0.)** os 6 do § 4 mudaram depois da auditoria, e a matriz antiga tinha
 eixos tirados da própria ideia (✔ em tudo na última linha). cole o prompt abaixo numa conversa nova,
 com busca, sem esta folha:
 
@@ -103,6 +115,9 @@ preencher a matriz com 1 linha de evidência para cada ✔ e ◐ dos 6.
 > **(reescrever, sem IA, depois da matriz nova.)** a auditoria derrubou a "inversão de direção": a
 > 596 Acres já faz a demanda nascer fora do órgão desde 2011. e o "custo do abandono" por prédio
 > precisa mostrar de onde vem o número (ver § 7).
+>
+> **(e o escopo mudou em 13/11/2026.)** a frase abaixo ainda fala de prédio público e de triagem como
+> abrigo em enchente; a ideia agora é a do § 0 e do § 1.
 
 **a frase (versão antes da auditoria):** o Chão Público entrega, para cada prédio público vazio, um laudo de quanto o abandono
 custa ao órgão e uma triagem de aptidão como abrigo em enchente, ligando bases que hoje ninguém liga
