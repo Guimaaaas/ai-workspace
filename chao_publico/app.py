@@ -26,6 +26,7 @@ ETAPAS = {
     "correcao": "✍️ Redator: corrigindo o que o revisor apontou",
     "conservador": "✍️ Redator: retirando o que não pôde ser confirmado",
     "lai": "📨 Escrevendo os pedidos de acesso à informação",
+    "leitor": "📎 Lendo os documentos enviados",
 }
 ROTULOS_FERRAMENTA = {
     "web_search": "busca na web", "web_fetch": "lendo página", "ler_pagina": "lendo página (leitura própria)",
@@ -208,7 +209,76 @@ def secao_pedidos_lai(res, chave_widget):
             st.rerun()
 
 
-def mostrar_resultado(res, chave_widget):
+def preparar_documentos(arquivos):
+    """Converte os arquivos enviados no formato do leitor. Devolve (documentos, problemas)."""
+    import base64
+    import io
+    from pypdf import PdfReader
+    docs, problemas = [], []
+    for arq in arquivos:
+        dados, nome = arq.getvalue(), arq.name
+        tipo = nome.lower().rsplit(".", 1)[-1]
+        if tipo in ("txt", "md"):
+            docs.append({"nome": nome, "texto": dados.decode("utf-8", errors="replace")})
+            continue
+        if tipo == "pdf":
+            try:
+                texto = "\n".join(p.extract_text() or "" for p in PdfReader(io.BytesIO(dados)).pages)
+            except Exception:
+                texto = ""
+            if len(texto.strip()) >= 200:  # PDF digital: o texto basta
+                docs.append({"nome": nome, "texto": texto[:60000]})
+                continue
+            bloco = {"type": "document", "source": {"type": "base64", "media_type": "application/pdf",
+                                                    "data": base64.standard_b64encode(dados).decode()}}
+        else:  # foto do documento
+            mime = {"jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png", "webp": "image/webp"}.get(tipo)
+            bloco = {"type": "image", "source": {"type": "base64", "media_type": mime,
+                                                 "data": base64.standard_b64encode(dados).decode()}}
+        if usar_assinatura:
+            problemas.append(f"**{nome}**: é escaneado ou foto, e o modo assinatura só lê documento com texto. "
+                             "Use o modo chave de API para este arquivo.")
+        else:
+            docs.append({"nome": nome, "bloco": bloco})
+    return docs, problemas
+
+
+def secao_anexar(res, chave_widget):
+    """Envio de documentos (matrícula, resposta de LAI…) que atualizam o dossiê e o laudo."""
+    if not pronto:
+        return
+    with st.expander("📎 Anexar documentos para atualizar o laudo (matrícula, resposta de LAI, certidão…)"):
+        st.caption("O leitor extrai os fatos do documento para o dossiê, e o laudo é reescrito e revisado. "
+                   "Nome e CPF de pessoas físicas não entram no laudo.")
+        arquivos = st.file_uploader("Documentos", type=["pdf", "txt", "md", "png", "jpg", "jpeg", "webp"],
+                                    accept_multiple_files=True, key=f"up_{chave_widget}",
+                                    label_visibility="collapsed")
+        if arquivos and st.button("Atualizar o laudo com estes documentos", type="primary",
+                                  key=f"atualizar_{chave_widget}"):
+            docs, problemas = preparar_documentos(arquivos)
+            for p in problemas:
+                st.warning(p)
+            if not docs:
+                return
+            atual, ao_etapa, ao_evento = painel_de_etapas()
+            ctx = fontes.Contexto(chave_transp, ss.dossie, chave_dados_gov)
+            pedido_original = next((m["texto"] for m in ss.conversa if m["papel"] == "user"), "")
+            novo = com_tratamento(lambda: agentes.atualizar_com_documentos(
+                novo_cliente(), modelo, docs, ctx, ao_etapa, ao_evento, res["documento"], pedido_original,
+                corrigir=corrigir, esforco=esforco), atual)
+            if novo:
+                novo["dossie"] = list(ss.dossie)
+                ss.id_laudo = historico.salvar(novo, pedido_original, ss.coordenadas, modelo, id_existente=ss.id_laudo)
+                novo["id_historico"] = ss.id_laudo
+                ss.documento = novo["documento"]
+                ss.custo_total += novo["custo_usd"]
+                ss.conversa.append({"papel": "user", "texto": "📎 Documentos anexados: "
+                                    + ", ".join(d["nome"] for d in docs)})
+                ss.conversa.append({"papel": "assistant", "texto": novo["documento"], "resultado": novo})
+                st.rerun()
+
+
+def mostrar_resultado(res, chave_widget, ultimo=False):
     status = res.get("status", "aprovado" if res.get("veredito") == "APROVADO" else "pendente")
     if DEV and res.get("revisoes") is not None:  # quem desenvolve vê o veredito cru e todas as revisões
         rotulo = {"aprovado": "aprovado", "conservador": "pendente → versão conservadora", "pendente": "pendente"}
@@ -223,6 +293,8 @@ def mostrar_resultado(res, chave_widget):
     st.markdown(res["documento"])
     botoes_download(res["documento"], "laudo-chao-publico", chave_widget)
     secao_pedidos_lai(res, chave_widget)
+    if ultimo:  # só o laudo mais recente recebe documentos
+        secao_anexar(res, chave_widget)
     dossie = res.get("dossie") or []
     with st.expander(f"Dossiê: {len(dossie)} evidências"):
         if dossie:
@@ -293,10 +365,11 @@ if not ss.conversa:
         "*Prédio privado abandonado na Rua da Concórdia, São José, Recife (PE): o IPTU progressivo está sendo cobrado?*"
     )
 
+ultimo_laudo = max((i for i, m in enumerate(ss.conversa) if m.get("resultado")), default=None)
 for i, m in enumerate(ss.conversa):
     with st.chat_message(m["papel"]):
         if m.get("resultado"):
-            mostrar_resultado(m["resultado"], i)
+            mostrar_resultado(m["resultado"], i, ultimo=(i == ultimo_laudo))
         else:
             st.markdown(m["texto"])
 
@@ -325,4 +398,4 @@ if pedido:
             ss.documento = res["documento"]
             ss.custo_total += res["custo_usd"]
             ss.conversa.append({"papel": "assistant", "texto": res["documento"], "resultado": res})
-            mostrar_resultado(res, len(ss.conversa) - 1)
+            mostrar_resultado(res, len(ss.conversa) - 1, ultimo=True)

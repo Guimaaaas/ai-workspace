@@ -110,6 +110,10 @@ Sonnet 5.5 ou o Haiku 5.5, que são mais baratos. Uma consulta completa faz vár
 - **Pedidos de LAI:** um botão gera, a partir das lacunas do laudo, um pedido por órgão, com o canal de
   protocolo (Fala.BR, e-SIC estadual ou municipal), o texto pronto, os prazos (20 + 10 dias) e o recurso
   (10 dias). Matrícula de cartório fica à parte, porque não é LAI.
+- **Anexar documentos:** embaixo do laudo mais recente, a pessoa envia o que conseguiu (certidão de matrícula,
+  resposta da LAI, certidão de débitos, vistoria) em PDF, texto ou foto. Um agente leitor registra os fatos no
+  dossiê (sem nome nem CPF de pessoa física), e o laudo é reescrito e revisado. Documento oficial prevalece
+  sobre inferência. PDF escaneado e foto só no modo chave de API; o modo assinatura lê só documento com texto.
 - **Imóveis laudados:** cada consulta concluída é salva e vira um ponto no mapa, de onde pode ser reaberta
   para ajuste. Hoje fica no computador de quem roda o app; para várias pessoas usarem juntas, isso precisa
   virar um banco de dados compartilhado.

@@ -290,6 +290,35 @@ Solicito que as informações sejam enviadas em formato digital e, quando forem 
 - certidão de matrícula: cartório de registro de imóveis competente (paga), etc."""
 
 
+LEITOR = """Você é o agente LEITOR DE DOCUMENTOS do Chão Público. A pessoa que pediu o laudo conseguiu \
+documentos (certidão de matrícula, resposta de pedido de LAI, certidão de débitos, auto de vistoria, ofício, \
+processo) e os enviou para completar o dossiê.
+
+Sua tarefa: ler cada documento e registrar com registrar_evidencia cada fato que importa para o laudo, em \
+especial os que fecham lacunas do laudo atual:
+- matrícula: número da matrícula e cartório, titular atual (órgão ou empresa), cadeia de transmissões com \
+datas, área, averbações e ônus (penhora, hipoteca, indisponibilidade, arrecadação, tombamento, \
+desapropriação, notificação de PEUC);
+- resposta de LAI ou ofício: o que o órgão informou (valores, datas, números de processo, recusas e o \
+motivo alegado);
+- certidão de débitos: débitos de IPTU, anos, valores, inscrição em dívida ativa;
+- vistoria ou laudo técnico: data, órgão, conclusão sobre estrutura, interdição, recomendações.
+
+Regras:
+- Em `fonte`, escreva "documento enviado pelo usuário: <nome do arquivo>" e o tipo do documento. Em `url`, \
+escreva "documento enviado: <nome do arquivo>". Em `tipo`, use "documento_enviado". Em `trecho`, copie o \
+texto literal do documento.
+- Se o documento contradizer uma evidência do dossiê, registre o fato novo e diga na afirmação qual \
+evidência (E#) ele contradiz. Documento oficial (cartório, órgão público) prevalece sobre inferência.
+- Pessoas físicas: nunca registre nome, CPF, RG, estado civil ou endereço de pessoa física. Escreva \
+"proprietário pessoa física" (ou "adquirente pessoa física"). Empresas, órgãos e cartórios podem ser nomeados.
+- Se um documento não for sobre este imóvel, ou estiver ilegível, não registre nada dele e diga isso.
+- Não invente: só o que está escrito no documento.
+
+Ao terminar, responda com um resumo curto: o que foi registrado (por id), que lacunas do laudo foram \
+fechadas, o que o documento contradiz e o que continua faltando."""
+
+
 @dataclass
 class Agente:
     nome: str
@@ -304,6 +333,8 @@ AGENTES = {
     # o revisor reconsulta as bases para conferir números, mas não escreve no dossiê
     "revisor": Agente("Revisor", REVISOR, [f for f in fontes.FERRAMENTAS if f["name"] != "registrar_evidencia"]
                       + [WEB_FETCH_REVISOR], "high"),
+    "leitor": Agente("Leitor de documentos", LEITOR,
+                     [f for f in fontes.FERRAMENTAS if f["name"] == "registrar_evidencia"], "medium"),
     "lai": Agente("Pedidos de LAI", PEDIDOS_LAI,
                   [f for f in fontes.FERRAMENTAS if f["name"] == "ler_pagina"]
                   + [{**WEB_SEARCH, "max_uses": 6}], "medium"),
@@ -395,26 +426,10 @@ def veredito(revisao):
     return m[-1] if m else "REVISAR"
 
 
-def executar_consulta(client, modelo, pedido, ctx, ao_etapa, ao_evento, documento_anterior=None,
-                      corrigir=True, esforco=None, max_rodadas=2):
-    """Roda o fluxo completo. ao_etapa(nome) abre uma etapa na interface; ao_evento registra passos.
-
-    A revisão é interna: o redator corrige até `max_rodadas` vezes; se ainda sobrar problema grave ou médio,
-    faz uma versão conservadora que retira o que não pôde ser confirmado. O laudo entregue nunca carrega
-    um erro que o revisor apontou.
-    """
-    uso = Uso()
-    anterior = f"\n\nDOCUMENTO ANTERIOR (para atualizar):\n{documento_anterior}" if documento_anterior else ""
-
-    ao_etapa("pesquisador")
-    n_antes = len(ctx.dossie)
-    resumo = rodar_agente(client, modelo, AGENTES["pesquisador"],
-                          f"PEDIDO DO USUÁRIO:\n{pedido}\n\nDOSSIÊ JÁ EXISTENTE (complemente, não repita):\n"
-                          f"{_dossie_txt(ctx.dossie)}", ctx, uso, ao_evento, esforco)
-    ao_evento("fim", "pesquisador", {"novas_evidencias": len(ctx.dossie) - n_antes, "resumo": resumo})
-
+def _redigir_e_revisar(client, modelo, base, anterior, ctx, uso, ao_etapa, ao_evento, esforco, corrigir,
+                       max_rodadas):
+    """Redator escreve, revisor confere, redator corrige (até max_rodadas) e, se preciso, versão conservadora."""
     ao_etapa("redator")
-    base = f"PEDIDO DO USUÁRIO:\n{pedido}\n\nDOSSIÊ:\n{_dossie_txt(ctx.dossie)}\n\nNOTAS DO PESQUISADOR:\n{resumo}"
     documento = rodar_agente(client, modelo, AGENTES["redator"], base + anterior, ctx, uso, ao_evento, esforco)
 
     ao_etapa("revisor")
@@ -447,12 +462,72 @@ def executar_consulta(client, modelo, pedido, ctx, ao_etapa, ao_evento, document
                                  "acrescente nenhuma informação nova. Devolva o documento inteiro, sem comentar a "
                                  "revisão.", ctx, uso, ao_evento, esforco)
         status = "conservador"
-
     return {"documento": documento, "revisoes": revisoes, "veredito": veredito(revisao), "status": status,
-            "rodadas_correcao": rodada,
-            "resumo_pesquisa": resumo, "custo_usd": uso.custo(modelo),
-            "tokens": {"entrada": uso.entrada, "saida": uso.saida, "cache_lido": uso.cache_lido,
-                       "cache_gravado": uso.cache_gravado, "buscas_web": uso.buscas}}
+            "rodadas_correcao": rodada}
+
+
+def _com_uso(res, uso, modelo, resumo):
+    res.update(resumo_pesquisa=resumo, custo_usd=uso.custo(modelo),
+               tokens={"entrada": uso.entrada, "saida": uso.saida, "cache_lido": uso.cache_lido,
+                       "cache_gravado": uso.cache_gravado, "buscas_web": uso.buscas})
+    return res
+
+
+def executar_consulta(client, modelo, pedido, ctx, ao_etapa, ao_evento, documento_anterior=None,
+                      corrigir=True, esforco=None, max_rodadas=2):
+    """Roda o fluxo completo. ao_etapa(nome) abre uma etapa na interface; ao_evento registra passos.
+
+    A revisão é interna: o redator corrige até `max_rodadas` vezes; se ainda sobrar problema grave ou médio,
+    faz uma versão conservadora que retira o que não pôde ser confirmado. O laudo entregue nunca carrega
+    um erro que o revisor apontou.
+    """
+    uso = Uso()
+    anterior = f"\n\nDOCUMENTO ANTERIOR (para atualizar):\n{documento_anterior}" if documento_anterior else ""
+
+    ao_etapa("pesquisador")
+    n_antes = len(ctx.dossie)
+    resumo = rodar_agente(client, modelo, AGENTES["pesquisador"],
+                          f"PEDIDO DO USUÁRIO:\n{pedido}\n\nDOSSIÊ JÁ EXISTENTE (complemente, não repita):\n"
+                          f"{_dossie_txt(ctx.dossie)}", ctx, uso, ao_evento, esforco)
+    ao_evento("fim", "pesquisador", {"novas_evidencias": len(ctx.dossie) - n_antes, "resumo": resumo})
+
+    base = f"PEDIDO DO USUÁRIO:\n{pedido}\n\nDOSSIÊ:\n{_dossie_txt(ctx.dossie)}\n\nNOTAS DO PESQUISADOR:\n{resumo}"
+    res = _redigir_e_revisar(client, modelo, base, anterior, ctx, uso, ao_etapa, ao_evento, esforco, corrigir,
+                             max_rodadas)
+    return _com_uso(res, uso, modelo, resumo)
+
+
+def atualizar_com_documentos(client, modelo, documentos, ctx, ao_etapa, ao_evento, documento_anterior,
+                             pedido_original="", corrigir=True, esforco=None, max_rodadas=2):
+    """O leitor extrai os fatos dos documentos enviados para o dossiê; depois o laudo é reescrito e revisado.
+
+    `documentos`: lista de {"nome", "texto"} (texto extraído) ou {"nome", "bloco"} (bloco de conteúdo da API,
+    para PDF escaneado ou foto; só no modo chave de API).
+    """
+    uso = Uso()
+    ao_etapa("leitor")
+    n_antes = len(ctx.dossie)
+    nomes = ", ".join(d["nome"] for d in documentos)
+    intro = (f"PEDIDO ORIGINAL:\n{pedido_original}\n\nLAUDO ATUAL:\n{documento_anterior}\n\n"
+             f"DOSSIÊ ATUAL:\n{_dossie_txt(ctx.dossie)}\n\nDOCUMENTOS ENVIADOS PELO USUÁRIO: {nomes}\n")
+    blocos = [d for d in documentos if "bloco" in d]
+    if blocos:  # modo API: o modelo lê o PDF escaneado ou a foto direto
+        mensagem = [{"type": "text", "text": intro}]
+        for d in documentos:
+            mensagem.append({"type": "text", "text": f"\n=== {d['nome']} ==="})
+            mensagem.append(d["bloco"] if "bloco" in d else {"type": "text", "text": d["texto"]})
+    else:
+        mensagem = intro + "".join(f"\n=== {d['nome']} ===\n{d['texto']}\n" for d in documentos)
+    resumo = rodar_agente(client, modelo, AGENTES["leitor"], mensagem, ctx, uso, ao_evento, esforco)
+    ao_evento("fim", "leitor", {"novas_evidencias": len(ctx.dossie) - n_antes, "resumo": resumo})
+
+    base = (f"PEDIDO DO USUÁRIO:\n{pedido_original}\n(atualização com documentos enviados: {nomes})\n\n"
+            f"DOSSIÊ:\n{_dossie_txt(ctx.dossie)}\n\nNOTAS DO LEITOR DE DOCUMENTOS:\n{resumo}")
+    anterior = (f"\n\nDOCUMENTO ANTERIOR (atualize com as evidências novas dos documentos enviados; elas "
+                f"prevalecem sobre inferências antigas):\n{documento_anterior}")
+    res = _redigir_e_revisar(client, modelo, base, anterior, ctx, uso, ao_etapa, ao_evento, esforco, corrigir,
+                             max_rodadas)
+    return _com_uso(res, uso, modelo, resumo)
 
 
 def gerar_pedidos_lai(client, modelo, laudo, ctx, ao_evento, esforco=None):

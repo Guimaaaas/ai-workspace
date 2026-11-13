@@ -603,7 +603,7 @@ FERRAMENTAS = [
          "fonte": {"type": "string", "description": "nome da base ou do documento"},
          "url": {"type": "string"},
          "trecho": {"type": "string", "description": "trecho literal ou campo/valor exato que prova a afirmação"},
-         "tipo": {"type": "string", "enum": ["oficial", "imprensa", "academico", "movimento_social", "outro"]}},
+         "tipo": {"type": "string", "enum": ["oficial", "imprensa", "academico", "movimento_social", "documento_enviado", "outro"]}},
          ["afirmacao", "fonte", "url", "trecho", "tipo"])},
 ]
 

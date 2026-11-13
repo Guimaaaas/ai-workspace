@@ -78,4 +78,7 @@ async def _rodar(modelo, agente, mensagem, ctx, uso, ao_evento, esforco, max_tur
 
 
 def rodar_agente(modelo, agente, mensagem, ctx, uso, ao_evento, esforco=None, max_turnos=40):
+    if not isinstance(mensagem, str):
+        raise RuntimeError("no modo assinatura só dá para ler documentos com texto (PDF digital, .txt, .md). "
+                           "PDF escaneado ou foto exige o modo chave de API.")
     return asyncio.run(_rodar(modelo, agente, mensagem, ctx, uso, ao_evento, esforco or agente.esforco, max_turnos))
