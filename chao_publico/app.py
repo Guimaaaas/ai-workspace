@@ -50,14 +50,28 @@ ss.setdefault("coordenadas", None)
 ENV = fontes.ler_env()  # chaves locais de quem roda o app (chao_publico/.env, fora do Git)
 DEV = ENV.get("MODO_DESENVOLVEDOR") == "1"  # mostra revisões e notas internas; a população não vê
 
+URL_CHAVE_IA = "https://platform.claude.com/settings/keys"
+URL_TRANSPARENCIA = "https://portaldatransparencia.gov.br/api-de-dados/cadastrar-email"
+URL_DADOS_GOV = "https://dados.gov.br"
+
+
+def campo_chave(rotulo, nome_env, ajuda):
+    """Chave de base pública. A que vem do .env local fica no servidor: o valor nunca vai para o navegador."""
+    if ENV.get(nome_env):
+        st.caption(f"✅ {rotulo}: usando a do `.env` deste computador.")
+        return ENV[nome_env]
+    return st.text_input(rotulo, type="password", help=ajuda)
+
+
 # ---------------------------------------------------------------- barra lateral
 with st.sidebar:
     st.header("🏚️ Chão Público")
     st.caption("Imóvel ocioso vira prova: quanto o abandono custa, se a lei está sendo aplicada e se o imóvel "
                "pode cumprir função social.")
     laudados = historico.listar()
-    tela = st.radio("Tela", ["consulta", "laudados"], horizontal=True, label_visibility="collapsed",
-                    format_func={"consulta": "Consulta", "laudados": f"Imóveis laudados ({len(laudados)})"}.get)
+    tela = st.radio("Tela", ["inicio", "consulta", "laudados"], horizontal=True, label_visibility="collapsed",
+                    format_func={"inicio": "Como começar", "consulta": "Consulta",
+                                 "laudados": f"Laudados ({len(laudados)})"}.get)
 
     # o modo assinatura só existe com MODO_ASSINATURA=1 no .env local: um app publicado nunca o mostra
     usar_assinatura = ENV.get("MODO_ASSINATURA") == "1" and st.radio(
@@ -69,7 +83,7 @@ with st.sidebar:
     else:
         chave = st.text_input("Sua chave da API da Anthropic", type="password", placeholder="sk-ant-…",
                               help="Fica só na memória desta sessão do navegador. Não é gravada em disco nem "
-                                   "enviada a nenhum outro serviço. Crie uma em platform.claude.com.")
+                                   "enviada a nenhum outro serviço. Passo a passo em **Como começar**.")
         if chave and ss.get("chave_validada") != chave:
             with st.spinner("conferindo a chave…"):
                 ok, msg = agentes.validar_chave(chave)
@@ -79,11 +93,11 @@ with st.sidebar:
     pronto = usar_assinatura or bool(chave and ss.chave_ok)
 
     with st.expander("Chaves das bases públicas (opcionais)", expanded=False):
-        chave_dados_gov = st.text_input("Token do dados.gov.br", type="password", value=ENV.get("DADOS_GOV_TOKEN", ""),
-                                        help="dados.gov.br > Entrar com gov.br (perfil Consumidor) > Minha Conta.")
-        chave_transp = st.text_input("Chave do Portal da Transparência", type="password",
-                                     value=ENV.get("PORTAL_TRANSPARENCIA_CHAVE", ""),
-                                     help="Gratuita: portaldatransparencia.gov.br/api-de-dados/cadastrar-email.")
+        st.caption("Como conseguir cada uma: veja **Como começar**.")
+        chave_transp = campo_chave("Chave do Portal da Transparência", "PORTAL_TRANSPARENCIA_CHAVE",
+                                   "Gratuita, pedida com seu e-mail no site do Portal da Transparência.")
+        chave_dados_gov = campo_chave("Token do dados.gov.br", "DADOS_GOV_TOKEN",
+                                      "Gratuito: dados.gov.br > Entrar com gov.br > Minha Conta.")
         if fontes.ARQUIVO_SPU.exists():
             st.caption("✅ Cadastro georreferenciado da SPU carregado.")
         else:
@@ -317,6 +331,135 @@ def mostrar_resultado(res, chave_widget, ultimo=False):
                    f"{t['saida']:,} de saída · {t['buscas_web']} buscas na web")
 
 
+# ---------------------------------------------------------------- tela: como começar
+if tela == "inicio":
+    st.title("Como começar")
+
+    st.subheader("A ideia")
+    st.markdown(
+        "Muitos prédios e terrenos ficam vazios por anos enquanto falta moradia, abrigo e equipamento público. "
+        "Quando são **públicos**, o abandono custa dinheiro: vigilância, manutenção, aluguel pago para "
+        "funcionar em outro lugar. Quando são **privados**, a Constituição e o Estatuto da Cidade exigem que "
+        "cumpram uma função social, e o município tem instrumentos para isso, como o IPTU progressivo.\n\n"
+        "O Chão Público transforma um imóvel ocioso em um **laudo com fonte para cada número**, para que um "
+        "movimento social, a Defesa Civil ou um órgão público possa levar o caso ao Ministério Público, à "
+        "Defensoria, ao Tribunal de Contas, à Câmara ou ao próprio órgão dono do imóvel. O laudo responde a "
+        "três perguntas:\n\n"
+        "- **Quanto o abandono custa ao poder público?**\n"
+        "- **A lei está sendo aplicada?** IPTU cobrado ano a ano, dívida, IPTU progressivo e demais "
+        "instrumentos da função social.\n"
+        "- **O imóvel pode cumprir uma função social?** Risco de enchente, área, conservação e entorno. O laudo "
+        "não escolhe o uso: se vira moradia, abrigo ou creche é decisão do órgão responsável."
+    )
+
+    st.subheader("Como funciona")
+    st.markdown(
+        "Três agentes de IA trabalham em sequência, cada um com uma tarefa só:\n\n"
+        "1. 🔎 **Pesquisador**: consulta bases públicas (cadastro da União, IPTU, cartas de inundação, "
+        "contratos, Diário Oficial, Tribunais de Contas, imprensa) e registra cada fato num dossiê, com o link "
+        "e o trecho exato da fonte.\n"
+        "2. ✍️ **Redator**: escreve o laudo usando **só** o dossiê. Ele não pesquisa nada: o que não foi "
+        "encontrado aparece como \"não encontrado\", nunca como suposição.\n"
+        "3. 🧐 **Revisor**: confere cada número contra a fonte e refaz as consultas. Se achar erro, devolve ao "
+        "redator. O que não puder ser confirmado sai do laudo.\n\n"
+        "O laudo não nomeia pessoas físicas, não acusa ninguém e não substitui vistoria nem parecer jurídico. "
+        "É um ponto de partida documentado: confira as fontes antes de protocolar."
+    )
+
+    st.subheader("O que você faz, passo a passo")
+    st.markdown(
+        "1. **Configure o acesso** (abaixo): cole a chave de IA na barra lateral e, se quiser, as chaves do "
+        "governo.\n"
+        "2. **Descreva o imóvel** na tela **Consulta**: endereço, nome do prédio, quem é o dono, há quanto "
+        "tempo está vazio. Exemplo: *Prédio do antigo INSS na Av. Dantas Barreto, Santo Antônio, Recife (PE), "
+        "vazio há anos.*\n"
+        "3. **Acompanhe os agentes** trabalhando. Uma consulta leva alguns minutos.\n"
+        "4. **Leia o laudo** e o dossiê com as fontes. Peça ajustes no próprio chat, se precisar.\n"
+        "5. **Baixe o laudo** em PDF.\n"
+        "6. **Gere os pedidos de acesso à informação (LAI)**: o app escreve um pedido para cada órgão que "
+        "tem os dados que faltaram, com o canal de protocolo e os prazos. Você só copia e protocola.\n"
+        "7. **Quando as respostas chegarem** (resposta da LAI, certidão de matrícula, vistoria), anexe os "
+        "documentos embaixo do laudo. Ele é reescrito e revisado com os dados novos.\n"
+        "8. **Veja os imóveis laudados** no mapa da tela **Laudados** e reabra qualquer um para continuar."
+    )
+
+    st.subheader("Configure o acesso")
+    st.markdown(
+        "O Chão Público não tem conta nem login. Ele funciona com **chaves de acesso** que você mesmo gera: "
+        "uma chave de IA, que é obrigatória, e duas chaves de bases do governo, que são opcionais e gratuitas. "
+        "Cada chave fica só na memória desta aba do navegador e é enviada apenas ao serviço que a emitiu. "
+        "Nada é gravado: quando você fecha a aba, as chaves somem, e na próxima visita é preciso colar de novo."
+    )
+    if pronto:
+        st.success("✅ Sua chave de IA está pronta. Vá para **Consulta** na barra lateral.")
+
+    st.markdown(
+        "| chave | precisa? | custa? | para que serve |\n"
+        "|:--|:--|:--|:--|\n"
+        "| **Chave de IA** | sim | paga por uso | roda os agentes que pesquisam, escrevem e revisam o laudo |\n"
+        "| **Portal da Transparência** | não | grátis | contratos e despesas federais ligados ao imóvel "
+        "(vigilância, manutenção, aluguel) |\n"
+        "| **dados.gov.br** | não | grátis | procurar bases federais no catálogo, como os cadastros de "
+        "Imóveis da União |"
+    )
+
+    st.markdown("#### 1. Chave de IA (obrigatória)")
+    st.markdown(
+        "É ela que paga o trabalho dos agentes. Hoje o Chão Público funciona com o **Claude**, da Anthropic. "
+        "O suporte a outros modelos está nos planos.\n\n"
+        "1. Crie uma conta na [plataforma da Anthropic](https://platform.claude.com).\n"
+        "2. Na área de cobrança (*Billing*), adicione crédito. É pré-pago: você só gasta o que colocou.\n"
+        f"3. Em [*API Keys*]({URL_CHAVE_IA}), clique em *Create Key* e copie a chave (começa com `sk-ant-`).\n"
+        "4. Cole a chave na barra lateral, em **Sua chave da API da Anthropic**.\n\n"
+        "**Quanto custa:** cada consulta faz várias chamadas ao modelo e várias buscas na web. A barra lateral "
+        "mostra a estimativa em dólares. Para gastar menos, troque o modelo para o Sonnet ou baixe a "
+        "profundidade para *rápida*.\n\n"
+        "**Dica:** defina um limite de gasto mensal na própria plataforma. Assim, nenhum erro passa do valor "
+        "que você escolheu."
+    )
+
+    st.markdown("#### 2. Chave do Portal da Transparência (opcional)")
+    st.markdown(
+        "O [Portal da Transparência](https://portaldatransparencia.gov.br), mantido pela Controladoria-Geral "
+        "da União (CGU), reúne os gastos do governo federal. Com a chave, o pesquisador consegue procurar "
+        "contratos e despesas ligados ao imóvel, que entram no cálculo de **quanto o abandono custa**.\n\n"
+        f"1. Abra a [página de cadastro da API]({URL_TRANSPARENCIA}).\n"
+        "2. Siga o cadastro. A chave chega no seu e-mail.\n"
+        "3. Cole a chave na barra lateral, em **Chaves das bases públicas → Chave do Portal da Transparência**.\n\n"
+        "A chave é ligada ao seu cadastro e só lê dados públicos: com ela não dá para alterar nada."
+    )
+
+    st.markdown("#### 3. Token do dados.gov.br (opcional)")
+    st.markdown(
+        f"O [dados.gov.br]({URL_DADOS_GOV}) é o catálogo de dados abertos do governo federal. Com o token, o "
+        "pesquisador procura conjuntos de dados federais sobre o imóvel, como os cadastros de Imóveis da "
+        "União da Secretaria do Patrimônio da União (SPU).\n\n"
+        f"1. Entre no [dados.gov.br]({URL_DADOS_GOV}) com a sua conta **gov.br**.\n"
+        "2. Abra **Minha Conta** e gere ou copie o token de acesso à API.\n"
+        "3. Cole o token na barra lateral, em **Chaves das bases públicas → Token do dados.gov.br**.\n\n"
+        "O token é ligado à sua conta gov.br e só lê o catálogo público."
+    )
+
+    st.markdown("#### Sem chave nenhuma do governo também funciona")
+    st.markdown(
+        "Estas bases não pedem chave e são consultadas sempre: cartas de inundação e risco geológico do "
+        "Serviço Geológico do Brasil, IPTU da Prefeitura do Recife, contratos federais do Compras.gov.br, "
+        "portais de dados abertos de estados e municípios, OpenStreetMap, IBGE e CNPJ (BrasilAPI), além de "
+        "busca na web em Diário Oficial, TCU, TCE e imprensa. As chaves opcionais só acrescentam fontes."
+    )
+
+    with st.expander("Para quem roda o app no próprio computador"):
+        st.markdown(
+            "- **Cadastro da SPU:** o site da SPU bloqueia download automático. "
+            f"[Baixe o arquivo no navegador]({fontes.URL_SPU}) e salve como "
+            "`chao_publico/dados/spu_pontos.geojson`. Sem ele, o pesquisador não verifica se o prédio está "
+            "no cadastro da União.\n"
+            "- **Chaves fixas:** as chaves das bases podem ficar no arquivo `chao_publico/.env` "
+            "(`PORTAL_TRANSPARENCIA_CHAVE=…` e `DADOS_GOV_TOKEN=…`). Elas ficam no servidor e não aparecem "
+            "no navegador. Não use esse arquivo para colocar chaves pessoais num app aberto ao público."
+        )
+    st.stop()
+
 # ---------------------------------------------------------------- tela: imóveis laudados
 if tela == "laudados":
     st.title("Imóveis laudados")
@@ -376,7 +519,8 @@ for i, m in enumerate(ss.conversa):
 pedido = st.chat_input("Descreva o imóvel (endereço, nome do prédio, dono…) ou peça um ajuste no laudo",
                        disabled=not pronto)
 if not pronto and not ss.conversa:
-    st.info("Cole sua chave da API da Anthropic na barra lateral para começar.")
+    st.info("Cole sua chave da API da Anthropic na barra lateral para começar. Não tem uma? O passo a passo "
+            "está em **Como começar**, no topo da barra lateral.")
 
 if pedido:
     ss.conversa.append({"papel": "user", "texto": pedido})

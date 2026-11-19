@@ -73,8 +73,12 @@ Ficaram de fora por enquanto: a busca textual do PNCP e as bases de cartório (m
 
 ### Chaves locais
 
-Quem roda o app pode deixar as chaves das bases num arquivo `chao_publico/.env`, que preenche a barra lateral
-sozinho. O `.env` e a pasta `dados/` estão no `.gitignore` e **não vão para o GitHub**.
+Quem usa o app cola as próprias chaves na barra lateral. A tela **Como começar** explica, com links para os sites
+do governo, como conseguir cada uma e para que serve. O projeto não distribui chave de ninguém.
+
+Quem roda o app no próprio computador pode deixar as chaves das bases num arquivo `chao_publico/.env`. Elas
+ficam no servidor, e a barra lateral só avisa que estão em uso: o valor não vai para o navegador. O `.env` e a
+pasta `dados/` estão no `.gitignore` e **não vão para o GitHub**.
 
 ```
 DADOS_GOV_TOKEN=...
